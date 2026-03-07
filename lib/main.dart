@@ -11,84 +11,192 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(title: "Ahmad Syafi'al Anam 3124521036"),
+      home: TemperatureConverter(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class TemperatureConverter extends StatefulWidget {
+  const TemperatureConverter({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<TemperatureConverter> createState() => _TemperatureConverterState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _TemperatureConverterState extends State<TemperatureConverter> {
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  final TextEditingController _controller = TextEditingController();
 
-  void _decrementCounter() {
-    setState(() {
-      _counter--;
-    });
+  String fromUnit = "Celsius";
+  String toUnit = "Fahrenheit";
+
+  double result = 0;
+
+  void convertTemperature() {
+    double input = double.tryParse(_controller.text) ?? 0;
+
+    double tempInCelsius;
+
+    if (fromUnit == "Celsius") {
+      tempInCelsius = input;
+    } else if (fromUnit == "Fahrenheit") {
+      tempInCelsius = (input - 32) * 5 / 9;
+    } else {
+      tempInCelsius = input - 273.15;
+    }
+
+    if (toUnit == "Celsius") {
+      result = tempInCelsius;
+    } else if (toUnit == "Fahrenheit") {
+      result = (tempInCelsius * 9 / 5) + 32;
+    } else {
+      result = tempInCelsius + 273.15;
+    }
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text("Aplikasi Konversi Suhu"),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.deepPurple,
       ),
+
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
+        padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
             colors: [
               Colors.deepPurple,
-              Colors.blue,
+              Colors.blue
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
-          child: Text(
-            '$_counter',
-            style: const TextStyle(
-              fontSize: 40,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+
+            const Text(
+              "Konversi Suhu",
+              style: TextStyle(
+                fontSize: 28,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
+
+            const SizedBox(height: 30),
+
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: "Masukkan suhu",
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: fromUnit,
+                    items: const [
+                      DropdownMenuItem(value: "Celsius", child: Text("Celsius")),
+                      DropdownMenuItem(value: "Fahrenheit", child: Text("Fahrenheit")),
+                      DropdownMenuItem(value: "Kelvin", child: Text("Kelvin")),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        fromUnit = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 15),
+
+                Expanded(
+                  child: DropdownButtonFormField(
+                    value: toUnit,
+                    items: const [
+                      DropdownMenuItem(value: "Celsius", child: Text("Celsius")),
+                      DropdownMenuItem(value: "Fahrenheit", child: Text("Fahrenheit")),
+                      DropdownMenuItem(value: "Kelvin", child: Text("Kelvin")),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        toUnit = value!;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            ElevatedButton(
+              onPressed: convertTemperature,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 15,
+                ),
+              ),
+              child: const Text(
+                "Konversi",
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Text(
+                "Hasil: ${result.toStringAsFixed(2)} $toUnit",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          ],
         ),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: _decrementCounter,
-            heroTag: "btn1",
-            backgroundColor: const Color.fromARGB(255, 255, 255, 255),gi
-            child: const Icon(Icons.remove),
-          ),
-          const SizedBox(width: 15),
-          FloatingActionButton(
-            onPressed: _incrementCounter,
-            heroTag: "btn2",
-            backgroundColor: const Color.fromARGB(255, 254, 254, 254),
-            child: const Icon(Icons.add),
-          ),
-        ],
       ),
     );
   }
