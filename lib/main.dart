@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    // Membungkus aplikasi dengan ChangeNotifierProvider
+    ChangeNotifierProvider(
+      create: (context) => TemperatureProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -9,195 +16,276 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TemperatureConverter(),
+      title: 'Konversi Suhu',
+      theme: ThemeData(
+        primarySwatch: Colors.deepPurple,
+        fontFamily: 'Roboto', // Pastikan font modern atau biarkan default
+      ),
+      home: const TemperatureConverterScreen(),
     );
   }
 }
 
-class TemperatureConverter extends StatefulWidget {
-  const TemperatureConverter({super.key});
+// ==========================================
+// 1. STATE MANAGEMENT (PROVIDER)
+// ==========================================
+class TemperatureProvider extends ChangeNotifier {
+  String _fromUnit = "Celsius";
+  String _toUnit = "Fahrenheit";
+  double _result = 0.0;
+  String _inputText = "";
 
-  @override
-  State<TemperatureConverter> createState() => _TemperatureConverterState();
-}
+  // Getters
+  String get fromUnit => _fromUnit;
+  String get toUnit => _toUnit;
+  double get result => _result;
 
-class _TemperatureConverterState extends State<TemperatureConverter> {
+  // Setters
+  void setFromUnit(String value) {
+    _fromUnit = value;
+    notifyListeners();
+  }
 
-  final TextEditingController _controller = TextEditingController();
+  void setToUnit(String value) {
+    _toUnit = value;
+    notifyListeners();
+  }
 
-  String fromUnit = "Celsius";
-  String toUnit = "Fahrenheit";
+  void setInputText(String value) {
+    _inputText = value;
+  }
 
-  double result = 0;
-
+  // Logika Konversi
   void convertTemperature() {
-    double input = double.tryParse(_controller.text) ?? 0;
-
+    double input = double.tryParse(_inputText) ?? 0;
     double tempInCelsius;
 
-    if (fromUnit == "Celsius") {
+    // Convert ke Celsius dulu sebagai base
+    if (_fromUnit == "Celsius") {
       tempInCelsius = input;
-    } else if (fromUnit == "Fahrenheit") {
+    } else if (_fromUnit == "Fahrenheit") {
       tempInCelsius = (input - 32) * 5 / 9;
     } else {
       tempInCelsius = input - 273.15;
     }
 
-    if (toUnit == "Celsius") {
-      result = tempInCelsius;
-    } else if (toUnit == "Fahrenheit") {
-      result = (tempInCelsius * 9 / 5) + 32;
+    // Convert dari Celsius ke target
+    if (_toUnit == "Celsius") {
+      _result = tempInCelsius;
+    } else if (_toUnit == "Fahrenheit") {
+      _result = (tempInCelsius * 9 / 5) + 32;
     } else {
-      result = tempInCelsius + 273.15;
+      _result = tempInCelsius + 273.15;
     }
 
-    setState(() {});
+    // Beritahu UI untuk update
+    notifyListeners();
   }
+}
+
+// ==========================================
+// 2. USER INTERFACE (UI)
+// ==========================================
+class TemperatureConverterScreen extends StatelessWidget {
+  const TemperatureConverterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Mendapatkan access ke provider
+    final provider = context.watch<TemperatureProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Aplikasi Konversi Suhu"),
-        centerTitle: true,
-        backgroundColor: Colors.deepPurple,
-      ),
-
       body: Container(
-        padding: const EdgeInsets.all(20),
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Colors.deepPurple,
-              Colors.blue
-            ],
+            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Card(
+                  elevation: 12,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header Icon & Title
+                        const Icon(
+                          Icons.thermostat_rounded,
+                          size: 64,
+                          color: Colors.deepPurple,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Konversi Suhu",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+                        // Input Field
+                        TextField(
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) => 
+                              context.read<TemperatureProvider>().setInputText(value),
+                          decoration: InputDecoration(
+                            labelText: "Masukkan Nilai Suhu",
+                            prefixIcon: const Icon(Icons.numbers_rounded),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
 
-            const Text(
-              "Konversi Suhu",
-              style: TextStyle(
-                fontSize: 28,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+                        // Dropdowns for Units
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdown(
+                                value: provider.fromUnit,
+                                onChanged: (val) => context
+                                    .read<TemperatureProvider>()
+                                    .setFromUnit(val!),
+                              ),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Icon(Icons.arrow_forward_rounded, 
+                                color: Colors.grey),
+                            ),
+                            Expanded(
+                              child: _buildDropdown(
+                                value: provider.toUnit,
+                                onChanged: (val) => context
+                                    .read<TemperatureProvider>()
+                                    .setToUnit(val!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
 
-            const SizedBox(height: 30),
+                        // Convert Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Memanggil fungsi konversi
+                              context.read<TemperatureProvider>().convertTemperature();
+                              
+                              // Opsional: Tutup keyboard setelah klik
+                              FocusScope.of(context).unfocus();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orangeAccent,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 5,
+                            ),
+                            child: const Text(
+                              "KONVERSI",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
 
-            TextField(
-              controller: _controller,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: "Masukkan suhu",
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Row(
-              children: [
-
-                Expanded(
-                  child: DropdownButtonFormField(
-                    value: fromUnit,
-                    items: const [
-                      DropdownMenuItem(value: "Celsius", child: Text("Celsius")),
-                      DropdownMenuItem(value: "Fahrenheit", child: Text("Fahrenheit")),
-                      DropdownMenuItem(value: "Kelvin", child: Text("Kelvin")),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        fromUnit = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                        // Result Display
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.deepPurple.shade50,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: Colors.deepPurple.shade100, width: 2),
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                "Hasil Konversi",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.deepPurple,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "${provider.result.toStringAsFixed(2)} ${provider.toUnit}",
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 15),
-
-                Expanded(
-                  child: DropdownButtonFormField(
-                    value: toUnit,
-                    items: const [
-                      DropdownMenuItem(value: "Celsius", child: Text("Celsius")),
-                      DropdownMenuItem(value: "Fahrenheit", child: Text("Fahrenheit")),
-                      DropdownMenuItem(value: "Kelvin", child: Text("Kelvin")),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        toUnit = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            ElevatedButton(
-              onPressed: convertTemperature,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 15,
-                ),
-              ),
-              child: const Text(
-                "Konversi",
-                style: TextStyle(fontSize: 18),
               ),
             ),
-
-            const SizedBox(height: 30),
-
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Text(
-                "Hasil: ${result.toStringAsFixed(2)} $toUnit",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  // Widget helper untuk dropdown agar kode lebih bersih
+  Widget _buildDropdown({
+    required String value,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+      items: const [
+        DropdownMenuItem(value: "Celsius", child: Text("Celsius")),
+        DropdownMenuItem(value: "Fahrenheit", child: Text("Fahrenheit")),
+        DropdownMenuItem(value: "Kelvin", child: Text("Kelvin")),
+      ],
+      onChanged: onChanged,
     );
   }
 }
