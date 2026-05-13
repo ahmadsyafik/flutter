@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "702308275388",
+    "project_id": "suhu-1eea1",
+    "storage_bucket": "suhu-1eea1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702308275388:android:6d4735df2b44731f076cb9",
+        "android_client_info": {
+          "package_name": "com.example.belajar_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5yswt5j4YOLFKmooryF-0l2Xxh7BEd9o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

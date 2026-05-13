@@ -29,6 +29,23 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+  <script>
+    // Initialize Firebase for Web
+    const firebaseConfig = {
+      apiKey: "AIzaSyD5yswt5j4YOLFKmooryF-0l2Xxh7BEd9o",
+      authDomain: "suhu-1eea1.firebaseapp.com",
+      projectId: "suhu-1eea1",
+      storageBucket: "suhu-1eea1.firebasestorage.app",
+      messagingSenderId: "702308275388",
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
   <title>belajar_flutter</title>
   <link rel="manifest" href="manifest.json">
 </head>
