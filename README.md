@@ -4,10 +4,8 @@ NRP : 3124521036
 
 Kelas : 2 IT-B
 
-<img width="696" height="839" alt="image" src="https://github.com/user-attachments/assets/09f92f17-c1c6-4e87-9e79-ccc4bd429362" />
+<img width="1600" height="1000" alt="WhatsApp Image 2026-05-27 at 20 38 47" src="https://github.com/user-attachments/assets/b3d9bc9d-411d-4679-a4b7-729912a23631" />
 
-
-<img width="697" height="842" alt="image" src="https://github.com/user-attachments/assets/f68e1d36-6a8b-4129-a393-bf801ae91568" />
 
 
 
